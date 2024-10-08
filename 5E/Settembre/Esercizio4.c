@@ -94,44 +94,113 @@ void importaCSV(Libreria *libreria)
     fclose(f);
 }
 
-void stampaPerCategoria(Libreria libreria, char *categoria)
+void stampaLibreria(Libreria libreria, char *categoriaFiltrata)
 {
     for (int i = 0; i < libreria.nCategorie; i++)
     {
-        if (strcasecmp(libreria.categorie[i].nome, categoria) == 0)
+        if (categoriaFiltrata == NULL || strcasecmp(libreria.categorie[i].nome, categoriaFiltrata) == 0)
         {
             for (int j = 0; j < libreria.categorie[i].nLibri; j++)
             {
                 Libro libro = libreria.categorie[i].libri[j];
-                printf("TITOLO: %s << AUTORE: %s << ANNO: %d << PREZZO: %.2f << CATEGORIA: %s\n", libro.titolo, libro.autore, libro.anno, libro.prezzo, libreria.categorie[i].nome);
+                printf("TITOLO: %s << AUTORE: %s << ANNO: %d << PREZZO: %.2f << CATEGORIA: %s\n",
+                       libro.titolo, libro.autore, libro.anno, libro.prezzo, libreria.categorie[i].nome);
             }
         }
     }
 }
 
-void cercaPerNome(Libreria libreria, char *titolo)
+Libro *cercaPerNome(Libreria *libreria, char *titolo, int *categoriaIndice)
 {
-    for (int i = 0; i < libreria.nCategorie; i++)
+    for (int i = 0; i < libreria->nCategorie; i++)
     {
-        for (int j = 0; j < libreria.categorie[i].nLibri; j++)
+        for (int j = 0; j < libreria->categorie[i].nLibri; j++)
         {
-            if (strcasecmp(libreria.categorie[i].libri[j].titolo, titolo) == 0)
+            if (strcasecmp(libreria->categorie[i].libri[j].titolo, titolo) == 0)
             {
-                Libro libro = libreria.categorie[i].libri[j];
-                printf("TITOLO: %s << AUTORE: %s << ANNO: %d << PREZZO: %.2f << CATEGORIA: %s\n", libro.titolo, libro.autore, libro.anno, libro.prezzo, libreria.categorie[i].nome);
+                *categoriaIndice = i;
+                return &libreria->categorie[i].libri[j];
             }
         }
     }
+    return NULL;
 }
 
-int main()
+void menuEsecuzione(Libreria *libreria, int scelta)
+{
+    switch (scelta)
+    {
+    case 1:
+        importaCSV(libreria);
+        break;
+
+    case 2:
+        stampaLibreria(*libreria, NULL);
+        break;
+
+    case 3:
+    {
+        char titolo[SIZE];
+        int categoriaIndice = -1;
+
+        printf("Inserisci il titolo del libro da cercare: ");
+
+        getchar();
+        fgets(titolo, SIZE, stdin);
+
+        titolo[strcspn(titolo, "\n")] = '\0';
+
+        Libro *libro = cercaPerNome(libreria, titolo, &categoriaIndice);
+
+        if (libro == NULL)
+        {
+            printf("Nessun libro trovato con questo nome\n");
+        }
+        else
+        {
+            printf("TITOLO: %s << AUTORE: %s << ANNO: %d << PREZZO: %.2f << CATEGORIA: %s\n",
+                   libro->titolo, libro->autore, libro->anno, libro->prezzo, libreria->categorie[categoriaIndice].nome);
+        }
+    }
+    break;
+
+    case 4:
+    {
+        char categoria[SIZE];
+
+        printf("Inserisci il nome della categoria di libri da cercare: ");
+
+        getchar();
+        fgets(categoria, SIZE, stdin);
+
+        categoria[strcspn(categoria, "\n")] = '\0';
+
+        stampaLibreria(*libreria, categoria);
+    }
+    break;
+    }
+}
+
+int main(int argc, char *argv[])
 {
     Libreria libreria = {0};
     Categoria categoria = {0};
     char *funz[FUNCTIONS] = {"Importa CSV", "Stampa libri", "Cerca libro dato nome", "Cerca libri data categoria", "Esci"};
+    int scelta;
 
-    importaCSV(&libreria);
-    stampaPerCategoria(libreria, "Narrativa storica");
-    cercaPerNome(libreria, "La metamorfosi");
+    while (1)
+    {
+        scelta = menu(funz);
+
+        if (scelta == FUNCTIONS)
+        {
+            printf("\nProgramma terminato\n");
+            break;
+        }
+        else
+        {
+            menuEsecuzione(&libreria, scelta);
+        }
+    }
     return 0;
 }
