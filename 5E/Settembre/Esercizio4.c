@@ -145,6 +145,7 @@ void importaCSV(Libreria *libreria)
     {
         Categoria *ctg;
 
+        // Estrai i dati del libro e il nome della categoria dalla riga
         sscanf(riga, "%[^,],%[^,],%d,%f,%[^\r\n]", libro.titolo, libro.autore, &libro.anno, &libro.prezzo, categoriaNome);
 
         categoriaIndice = trovaCategoria(libreria, categoriaNome);
