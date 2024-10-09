@@ -88,7 +88,7 @@ void importaLibro(Categoria *categoria, Libro libro)
     if (categoria->nLibri >= categoria->nMaxLibri)
     {
         categoria->nMaxLibri *= 2;
-        categoria->libri = realloc(categoria->libri, categoria->nMaxLibri * sizeof(Libro));
+        categoria->libri = realloc(categoria->libri, categoria->nMaxLibri * sizeof(Libro)); // Realloca la memoria con la nuova dimensione
     }
     categoria->libri[categoria->nLibri] = libro;
     categoria->nLibri++;
@@ -102,7 +102,7 @@ void importaCategoria(Libreria *libreria, char *categoria)
     if (libreria->nCategorie >= libreria->nMaxCategorie)
     {
         libreria->nMaxCategorie *= 2;
-        libreria->categorie = realloc(libreria->categorie, libreria->nMaxCategorie * sizeof(Categoria));
+        libreria->categorie = realloc(libreria->categorie, libreria->nMaxCategorie * sizeof(Categoria)); // Realloca la memoria con la nuova dimensione
     }
     ctg = &libreria->categorie[libreria->nCategorie];
     strcpy(ctg->nome, categoria);
@@ -161,7 +161,7 @@ void importaCSV(Libreria *libreria)
     fclose(f);
 }
 
-//Funzione che controlla se il file CSV è stato importato
+// Funzione che controlla se il file CSV è stato importato
 int controlloImportazione(Libreria *libreria)
 {
     if (libreria->importato == 0)
@@ -171,7 +171,7 @@ int controlloImportazione(Libreria *libreria)
     }
 }
 
-//Funzione che stampa tutti i libri della libreria o solo quelli di una categoria specifica
+// Funzione che stampa tutti i libri della libreria o solo quelli di una categoria specifica
 void stampaLibreria(Libreria *libreria, char *categoria)
 {
     for (int i = 0; i < libreria->nCategorie; i++)
@@ -188,7 +188,7 @@ void stampaLibreria(Libreria *libreria, char *categoria)
     }
 }
 
-//Funzione che cerca un libro nella libreria e ne restituisce un puntatore se lo trova, NULL se non lo trova
+// Funzione che cerca un libro nella libreria e ne restituisce un puntatore se lo trova, NULL se non lo trova
 Libro *cercaPerNome(Libreria *libreria, char *titolo, int *categoriaIndice)
 {
     for (int i = 0; i < libreria->nCategorie; i++)
@@ -205,7 +205,7 @@ Libro *cercaPerNome(Libreria *libreria, char *titolo, int *categoriaIndice)
     return NULL;
 }
 
-//Funzione che esegue le funzioni del menù a seconda della scelta dell'utente
+// Funzione che esegue le funzioni del menù a seconda della scelta dell'utente
 void menuEsecuzione(Libreria *libreria, int scelta)
 {
     switch (scelta)
@@ -231,7 +231,6 @@ void menuEsecuzione(Libreria *libreria, int scelta)
         {
             return;
         }
-
         char titolo[SIZE];
         int categoriaIndice = -1;
         Libro *libro;
@@ -261,7 +260,6 @@ void menuEsecuzione(Libreria *libreria, int scelta)
         {
             return;
         }
-
         char categoria[SIZE];
         int categoriaIndice;
 
@@ -287,15 +285,15 @@ void menuEsecuzione(Libreria *libreria, int scelta)
 
 int main(int argc, char *argv[])
 {
-    Libreria libreria; //Dichiarazione della libreria
+    Libreria libreria; // Dichiarazione della libreria
 
-    //Array di stringhe contenente le opzioni del menù
+    // Array di stringhe contenente le opzioni del menù
     char *funz[FUNCTIONS] = {"Importa CSV", "Stampa libri", "Cerca libro dato nome", "Cerca libri data categoria", "Esci"};
     int scelta;
 
     initLibreria(&libreria);
 
-    //Ciclo che itera finchè l'utente non sceglie l'opzione "Esci"
+    // Ciclo che itera finchè l'utente non sceglie l'opzione "Esci"
     while (1)
     {
         scelta = menu(funz);
