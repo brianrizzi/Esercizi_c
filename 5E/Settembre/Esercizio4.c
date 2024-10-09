@@ -26,7 +26,7 @@ typedef struct
 typedef struct
 {
     Categoria *categorie;
-    int nCategorie, nMaxCategorie;
+    int nCategorie, nMaxCategorie, importato;
 } Libreria;
 
 int menu(char *arr[])
@@ -62,6 +62,7 @@ void initLibreria(Libreria *libreria)
     libreria->categorie = malloc(DIM_LIBRERIA * sizeof(Categoria));
     libreria->nCategorie = 0;
     libreria->nMaxCategorie = DIM_LIBRERIA;
+    libreria->importato = 0;
 }
 
 void freeLibreria(Libreria *libreria)
@@ -145,6 +146,8 @@ void importaCSV(Libreria *libreria)
         ctg = &libreria->categorie[categoriaIndice];
         importaLibro(ctg, libro);
     }
+    libreria->importato = 1;
+
     fclose(f);
 }
 
@@ -189,11 +192,23 @@ void menuEsecuzione(Libreria *libreria, int scelta)
         break;
 
     case 2:
+    {
+        if (libreria->importato == 0)
+        {
+            printf("Il file CSV non è ancora stato importato\n\n");
+            return;
+        }
         stampaLibreria(libreria, NULL);
-        break;
+    }
+    break;
 
     case 3:
     {
+        if (libreria->importato == 0)
+        {
+            printf("Il file CSV non è ancora stato importato\n\n");
+            return;
+        }
         char titolo[SIZE];
         int categoriaIndice = -1;
         Libro *libro;
@@ -219,6 +234,11 @@ void menuEsecuzione(Libreria *libreria, int scelta)
 
     case 4:
     {
+        if (libreria->importato == 0)
+        {
+            printf("Il file CSV non è ancora stato importato\n\n");
+            return;
+        }
         char categoria[SIZE];
         int categoriaIndice;
 
