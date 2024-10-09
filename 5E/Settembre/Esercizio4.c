@@ -101,11 +101,24 @@ void importaCategoria(Libreria *libreria, char *categoria)
     libreria->nCategorie++;
 }
 
+int trovaCategoria(Libreria *libreria, char *nomeCategoria)
+{
+    for (int i = 0; i < libreria->nCategorie; i++)
+    {
+        if (strcasecmp(libreria->categorie[i].nome, nomeCategoria) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void importaCSV(Libreria *libreria)
 {
     FILE *f;
     Libro libro;
     char riga[BUFFER_SIZE], categoriaNome[SIZE];
+    int categoriaIndice;
 
     f = fopen(FILECSV, "r");
     if (f == NULL)
@@ -119,26 +132,17 @@ void importaCSV(Libreria *libreria)
     while (fgets(riga, BUFFER_SIZE, f) != NULL)
     {
         Categoria *ctg;
-        int esistente = -1;
 
         sscanf(riga, "%[^,],%[^,],%d,%f,%[^\r\n]", libro.titolo, libro.autore, &libro.anno, &libro.prezzo, categoriaNome);
 
-        for (int i = 0; i < libreria->nCategorie; i++)
-        {
-            if (strcasecmp(libreria->categorie[i].nome, categoriaNome) == 0)
-            {
-                esistente = i;
-                break;
-            }
-        }
+        categoriaIndice = trovaCategoria(libreria, categoriaNome);
 
-        if (esistente == -1)
+        if (categoriaIndice == -1)
         {
             importaCategoria(libreria, categoriaNome);
-            esistente = libreria->nCategorie - 1;
+            categoriaIndice = libreria->nCategorie - 1;
         }
-
-        ctg = &libreria->categorie[esistente];
+        ctg = &libreria->categorie[categoriaIndice];
         importaLibro(ctg, libro);
     }
     fclose(f);
@@ -216,13 +220,23 @@ void menuEsecuzione(Libreria *libreria, int scelta)
     case 4:
     {
         char categoria[SIZE];
+        int categoriaIndice;
 
         printf("Inserisci il nome della categoria di libri da cercare: ");
         getchar();
         fgets(categoria, SIZE, stdin);
         categoria[strcspn(categoria, "\n")] = '\0';
 
-        stampaLibreria(libreria, categoria);
+        categoriaIndice = trovaCategoria(libreria, categoria);
+
+        if (categoriaIndice == -1)
+        {
+            printf("La categoria <%s> non è presente nella libreria.\n", categoria);
+        }
+        else
+        {
+            stampaLibreria(libreria, categoria);
+        }
     }
     break;
     }
