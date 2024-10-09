@@ -17,15 +17,16 @@ typedef struct
 
 typedef struct
 {
-    Libro libri[DIM_LIBRERIA];
-    int nLibri;
+    Libro *libri;
     char nome[SIZE];
+    int nLibri, nMaxLibri;
+
 } Categoria;
 
 typedef struct
 {
-    Categoria categorie[DIM_LIBRERIA];
-    int nCategorie;
+    Categoria *categorie;
+    int nCategorie, nMaxCategorie;
 } Libreria;
 
 int menu(char *arr[])
@@ -49,19 +50,70 @@ int menu(char *arr[])
     return scelta;
 }
 
+void initCategoria(Categoria *categoria)
+{
+    categoria->libri = malloc(DIM_LIBRERIA * sizeof(Libro));
+    categoria->nLibri = 0;
+    categoria->nMaxLibri = DIM_LIBRERIA;
+}
+
+void initLibreria(Libreria *libreria)
+{
+    libreria->categorie = malloc(DIM_LIBRERIA * sizeof(Categoria));
+    libreria->nCategorie = 0;
+    libreria->nMaxCategorie = DIM_LIBRERIA;
+}
+
+void freeLibreria(Libreria *libreria)
+{
+    for (int i = 0; i < libreria->nCategorie; i++)
+    {
+        free(libreria->categorie[i].libri);
+    }
+    free(libreria->categorie);
+}
+
+void importaLibro(Categoria *categoria, Libro libro)
+{
+    if (categoria->nLibri >= categoria->nMaxLibri)
+    {
+        categoria->nMaxLibri *= 2;
+        categoria->libri = realloc(categoria->libri, categoria->nMaxLibri * sizeof(Libro));
+    }
+    categoria->libri[categoria->nLibri] = libro;
+    categoria->nLibri++;
+}
+
+void importaCategoria(Libreria *libreria, char *categoria)
+{
+    Categoria *ctg;
+
+    if (libreria->nCategorie >= libreria->nMaxCategorie)
+    {
+        libreria->nMaxCategorie *= 2;
+        libreria->categorie = realloc(libreria->categorie, libreria->nMaxCategorie * sizeof(Categoria));
+    }
+
+    ctg = &libreria->categorie[libreria->nCategorie];
+    strcpy(ctg->nome, categoria);
+
+    initCategoria(ctg);
+    libreria->nCategorie++;
+}
+
 void importaCSV(Libreria *libreria)
 {
     FILE *f;
     Libro libro;
-    char riga[BUFFER_SIZE], categoria[SIZE];
+    char riga[BUFFER_SIZE], categoriaNome[SIZE];
 
     f = fopen(FILECSV, "r");
-
     if (f == NULL)
     {
         printf("Errore nell'apertura del file");
         exit(-1);
     }
+
     fgets(riga, BUFFER_SIZE, f);
 
     while (fgets(riga, BUFFER_SIZE, f) != NULL)
@@ -69,11 +121,11 @@ void importaCSV(Libreria *libreria)
         Categoria *ctg;
         int esistente = -1;
 
-        sscanf(riga, "%[^,],%[^,],%d,%f,%[^\r\n]", libro.titolo, libro.autore, &libro.anno, &libro.prezzo, categoria);
+        sscanf(riga, "%[^,],%[^,],%d,%f,%[^\r\n]", libro.titolo, libro.autore, &libro.anno, &libro.prezzo, categoriaNome);
 
         for (int i = 0; i < libreria->nCategorie; i++)
         {
-            if (strcasecmp(libreria->categorie[i].nome, categoria) == 0)
+            if (strcasecmp(libreria->categorie[i].nome, categoriaNome) == 0)
             {
                 esistente = i;
                 break;
@@ -82,29 +134,27 @@ void importaCSV(Libreria *libreria)
 
         if (esistente == -1)
         {
-            esistente = libreria->nCategorie;
-            strcpy(libreria->categorie[libreria->nCategorie].nome, categoria);
-            libreria->categorie[libreria->nCategorie].nLibri = 0;
-            libreria->nCategorie++;
+            importaCategoria(libreria, categoriaNome);
+            esistente = libreria->nCategorie - 1;
         }
+
         ctg = &libreria->categorie[esistente];
-        ctg->libri[ctg->nLibri] = libro;
-        ctg->nLibri++;
+        importaLibro(ctg, libro);
     }
     fclose(f);
 }
 
-void stampaLibreria(Libreria libreria, char *categoriaFiltrata)
+void stampaLibreria(Libreria *libreria, char *categoria)
 {
-    for (int i = 0; i < libreria.nCategorie; i++)
+    for (int i = 0; i < libreria->nCategorie; i++)
     {
-        if (categoriaFiltrata == NULL || strcasecmp(libreria.categorie[i].nome, categoriaFiltrata) == 0)
+        if (categoria == NULL || strcasecmp(libreria->categorie[i].nome, categoria) == 0)
         {
-            for (int j = 0; j < libreria.categorie[i].nLibri; j++)
+            for (int j = 0; j < libreria->categorie[i].nLibri; j++)
             {
-                Libro libro = libreria.categorie[i].libri[j];
+                Libro libro = libreria->categorie[i].libri[j];
                 printf("TITOLO: %s << AUTORE: %s << ANNO: %d << PREZZO: %.2f << CATEGORIA: %s\n",
-                       libro.titolo, libro.autore, libro.anno, libro.prezzo, libreria.categorie[i].nome);
+                       libro.titolo, libro.autore, libro.anno, libro.prezzo, libreria->categorie[i].nome);
             }
         }
     }
@@ -135,22 +185,21 @@ void menuEsecuzione(Libreria *libreria, int scelta)
         break;
 
     case 2:
-        stampaLibreria(*libreria, NULL);
+        stampaLibreria(libreria, NULL);
         break;
 
     case 3:
     {
         char titolo[SIZE];
         int categoriaIndice = -1;
+        Libro *libro;
 
         printf("Inserisci il titolo del libro da cercare: ");
-
         getchar();
         fgets(titolo, SIZE, stdin);
-
         titolo[strcspn(titolo, "\n")] = '\0';
 
-        Libro *libro = cercaPerNome(libreria, titolo, &categoriaIndice);
+        libro = cercaPerNome(libreria, titolo, &categoriaIndice);
 
         if (libro == NULL)
         {
@@ -169,13 +218,11 @@ void menuEsecuzione(Libreria *libreria, int scelta)
         char categoria[SIZE];
 
         printf("Inserisci il nome della categoria di libri da cercare: ");
-
         getchar();
         fgets(categoria, SIZE, stdin);
-
         categoria[strcspn(categoria, "\n")] = '\0';
 
-        stampaLibreria(*libreria, categoria);
+        stampaLibreria(libreria, categoria);
     }
     break;
     }
@@ -183,10 +230,12 @@ void menuEsecuzione(Libreria *libreria, int scelta)
 
 int main(int argc, char *argv[])
 {
-    Libreria libreria = {0};
-    Categoria categoria = {0};
+    Libreria libreria;
+
     char *funz[FUNCTIONS] = {"Importa CSV", "Stampa libri", "Cerca libro dato nome", "Cerca libri data categoria", "Esci"};
     int scelta;
+
+    initLibreria(&libreria);
 
     while (1)
     {
@@ -202,5 +251,7 @@ int main(int argc, char *argv[])
             menuEsecuzione(&libreria, scelta);
         }
     }
+    freeLibreria(&libreria);
+
     return 0;
 }
