@@ -20,7 +20,6 @@ typedef struct
     Libro *libri;
     char nome[SIZE];
     int nLibri, nMaxLibri;
-
 } Categoria;
 
 typedef struct
@@ -94,7 +93,6 @@ void importaCategoria(Libreria *libreria, char *categoria)
         libreria->nMaxCategorie *= 2;
         libreria->categorie = realloc(libreria->categorie, libreria->nMaxCategorie * sizeof(Categoria));
     }
-
     ctg = &libreria->categorie[libreria->nCategorie];
     strcpy(ctg->nome, categoria);
 
@@ -122,12 +120,12 @@ void importaCSV(Libreria *libreria)
     int categoriaIndice;
 
     f = fopen(FILECSV, "r");
+
     if (f == NULL)
     {
         printf("Errore nell'apertura del file");
         exit(-1);
     }
-
     fgets(riga, BUFFER_SIZE, f);
 
     while (fgets(riga, BUFFER_SIZE, f) != NULL)
@@ -147,8 +145,16 @@ void importaCSV(Libreria *libreria)
         importaLibro(ctg, libro);
     }
     libreria->importato = 1;
-
     fclose(f);
+}
+
+void controlloImportazione(Libreria *libreria)
+{
+    if (libreria->importato == 0)
+    {
+        printf("Il file CSV non è ancora stato importato\n\n");
+        return;
+    }
 }
 
 void stampaLibreria(Libreria *libreria, char *categoria)
@@ -193,22 +199,16 @@ void menuEsecuzione(Libreria *libreria, int scelta)
 
     case 2:
     {
-        if (libreria->importato == 0)
-        {
-            printf("Il file CSV non è ancora stato importato\n\n");
-            return;
-        }
+        controlloImportazione(libreria);
+
         stampaLibreria(libreria, NULL);
     }
     break;
 
     case 3:
     {
-        if (libreria->importato == 0)
-        {
-            printf("Il file CSV non è ancora stato importato\n\n");
-            return;
-        }
+        controlloImportazione(libreria);
+
         char titolo[SIZE];
         int categoriaIndice = -1;
         Libro *libro;
@@ -234,11 +234,8 @@ void menuEsecuzione(Libreria *libreria, int scelta)
 
     case 4:
     {
-        if (libreria->importato == 0)
-        {
-            printf("Il file CSV non è ancora stato importato\n\n");
-            return;
-        }
+        controlloImportazione(libreria);
+
         char categoria[SIZE];
         int categoriaIndice;
 
