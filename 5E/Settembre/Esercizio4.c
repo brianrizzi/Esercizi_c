@@ -167,8 +167,11 @@ int controlloImportazione(Libreria *libreria)
 {
     if (libreria->importato == 0)
     {
-        printf("Il file CSV non è ancora stato importato\n\n");
         return -1;
+    }
+    else if (libreria->importato == 1)
+    {
+        return -2;
     }
 }
 
@@ -212,13 +215,21 @@ void menuEsecuzione(Libreria *libreria, int scelta)
     switch (scelta)
     {
     case 1:
+    {
+        if (controlloImportazione(libreria) == -2)
+        {
+            printf("Il file CSV è già stato importato\n\n");
+            return;
+        }
         importaCSV(libreria);
-        break;
+    }
+    break;
 
     case 2:
     {
         if (controlloImportazione(libreria) == -1)
         {
+            printf("Il file CSV non è ancora stato importato\n\n");
             return;
         }
 
@@ -230,6 +241,7 @@ void menuEsecuzione(Libreria *libreria, int scelta)
     {
         if (controlloImportazione(libreria) == -1)
         {
+            printf("Il file CSV non è ancora stato importato\n\n");
             return;
         }
         char titolo[SIZE];
@@ -259,6 +271,7 @@ void menuEsecuzione(Libreria *libreria, int scelta)
     {
         if (controlloImportazione(libreria) == -1)
         {
+            printf("Il file CSV non è ancora stato importato\n\n");
             return;
         }
         char categoria[SIZE];
