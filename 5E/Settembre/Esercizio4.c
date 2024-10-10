@@ -129,8 +129,8 @@ void importaCSV(Libreria *libreria)
 {
     FILE *f;
     Libro libro;
-    char riga[BUFFER_SIZE], categoriaNome[SIZE];
-    int categoriaIndice;
+    char riga[BUFFER_SIZE], nomeCategoria[SIZE];
+    int indiceCategoria;
 
     f = fopen(FILECSV, "r");
 
@@ -146,16 +146,16 @@ void importaCSV(Libreria *libreria)
         Categoria *ctg;
 
         // Estrai i dati del libro e il nome della categoria dalla riga
-        sscanf(riga, "%[^,],%[^,],%d,%f,%[^\r\n]", libro.titolo, libro.autore, &libro.anno, &libro.prezzo, categoriaNome);
+        sscanf(riga, "%[^,],%[^,],%d,%f,%[^\r\n]", libro.titolo, libro.autore, &libro.anno, &libro.prezzo, nomeCategoria);
 
-        categoriaIndice = trovaCategoria(libreria, categoriaNome);
+        indiceCategoria = trovaCategoria(libreria, nomeCategoria);
 
-        if (categoriaIndice == -1)
+        if (indiceCategoria == -1)
         {
-            importaCategoria(libreria, categoriaNome);
-            categoriaIndice = libreria->nCategorie - 1;
+            importaCategoria(libreria, nomeCategoria);
+            indiceCategoria = libreria->nCategorie - 1;
         }
-        ctg = &libreria->categorie[categoriaIndice];
+        ctg = &libreria->categorie[indiceCategoria];
         importaLibro(ctg, libro);
     }
     libreria->importato = 1;
@@ -193,7 +193,7 @@ void stampaLibreria(Libreria *libreria, char *categoria)
 }
 
 // Funzione che cerca un libro nella libreria e ne restituisce un puntatore se lo trova, NULL se non lo trova
-Libro *cercaPerNome(Libreria *libreria, char *titolo, int *categoriaIndice)
+Libro *cercaPerNome(Libreria *libreria, char *titolo, int *indiceCategoria)
 {
     for (int i = 0; i < libreria->nCategorie; i++)
     {
@@ -201,7 +201,7 @@ Libro *cercaPerNome(Libreria *libreria, char *titolo, int *categoriaIndice)
         {
             if (strcasecmp(libreria->categorie[i].libri[j].titolo, titolo) == 0)
             {
-                *categoriaIndice = i;
+                *indiceCategoria = i;
                 return &libreria->categorie[i].libri[j];
             }
         }
