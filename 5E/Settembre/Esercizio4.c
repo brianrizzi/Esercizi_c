@@ -245,7 +245,7 @@ void menuEsecuzione(Libreria *libreria, int scelta)
             return;
         }
         char titolo[SIZE];
-        int categoriaIndice = -1;
+        int indiceCategoria = -1;
         Libro *libro;
 
         printf("Inserisci il titolo del libro da cercare: ");
@@ -253,7 +253,7 @@ void menuEsecuzione(Libreria *libreria, int scelta)
         fgets(titolo, SIZE, stdin);
         titolo[strcspn(titolo, "\n")] = '\0';
 
-        libro = cercaPerNome(libreria, titolo, &categoriaIndice);
+        libro = cercaPerNome(libreria, titolo, &indiceCategoria);
 
         if (libro == NULL)
         {
@@ -275,16 +275,16 @@ void menuEsecuzione(Libreria *libreria, int scelta)
             return;
         }
         char categoria[SIZE];
-        int categoriaIndice;
+        int indiceCategoria;
 
         printf("Inserisci il nome della categoria di libri da cercare: ");
         getchar();
         fgets(categoria, SIZE, stdin);
         categoria[strcspn(categoria, "\n")] = '\0';
 
-        categoriaIndice = trovaCategoria(libreria, categoria);
+        indiceCategoria = trovaCategoria(libreria, categoria);
 
-        if (categoriaIndice == -1)
+        if (indiceCategoria == -1)
         {
             printf("La categoria <%s> non è presente nella libreria.\n", categoria);
         }
